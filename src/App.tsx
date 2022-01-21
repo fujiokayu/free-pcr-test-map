@@ -1,26 +1,48 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 
-function App() {
+const containerStyle = {
+  height: "100vh",
+  width: "100%",
+};
+
+const center = {
+  lat: 43.76279287299646,
+  lng: 142.35864460827105,
+};
+
+const MyComponent = () => {
+  const [places, setPlaces] = useState([])
+
+  const fetchPlaces = async () => {
+    fetch('places.json')
+    .then((response) => response.json())
+    .then((data) => setPlaces(data.results))
+  }
+  useEffect(() => {
+    fetchPlaces();
+  }, [])
+
+  if (!places || places.length === 0) {
+    return null;
+  }
+
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+    <LoadScript googleMapsApiKey='placeholder'>
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={center}
+        zoom={15}
+      >
+        {places.map((place) => (
+          // @ts-ignore
+          <Marker position={place.geometry.location} />
+        ))}
 
-export default App;
+      </GoogleMap>
+    </LoadScript>
+  );
+};
+
+export default MyComponent;
