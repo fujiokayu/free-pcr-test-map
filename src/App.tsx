@@ -1,48 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import React, { useState, useEffect } from 'react'
+import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api"
 
 const containerStyle = {
   height: "100vh",
   width: "100%",
-};
+}
 
 const center = {
   lat: 43.76279287299646,
   lng: 142.35864460827105,
-};
+}
+
+const divStyle = {
+  background: "white",
+  fontSize: 7.5,
+}
+
+interface markersJson {
+  No: React.Key
+  latlng: google.maps.LatLng | google.maps.LatLngLiteral
+  formatted_address: string
+  Name: string
+}
 
 const MyComponent = () => {
-  const [places, setPlaces] = useState([])
+  const [size, setSize] = useState<undefined | google.maps.Size>(undefined);
+  const infoWindowOptions = {
+    pixelOffset: size,
+  }
+  const createOffsetSize = () => {
+    return setSize(new window.google.maps.Size(0, -45))
+  }
 
-  const fetchPlaces = async () => {
-    fetch('places.json')
+  const [markers, setMarkers] = useState([])
+
+  const fetchMarkers = async () => {
+    fetch('markers.json')
     .then((response) => response.json())
-    .then((data) => setPlaces(data.results))
+    .then((data) => setMarkers(data.results))
   }
   useEffect(() => {
-    fetchPlaces();
+    fetchMarkers();
   }, [])
 
-  if (!places || places.length === 0) {
+  if (!markers || markers.length === 0) {
     return null;
   }
 
 
   return (
-    <LoadScript googleMapsApiKey='placeholder'>
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={center}
-        zoom={15}
-      >
-        {places.map((place) => (
-          // @ts-ignore
-          <Marker position={place.geometry.location} />
+      <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={20}>
+        {markers.map((place: markersJson) => (
+          <div key={place.No}>
+            <Marker position={place.latlng}>
+              {place.latlng && <InfoWindow position={place.latlng} options={infoWindowOptions}>
+                <div style={divStyle}>
+                  <h1>{place.Name}</h1>
+                </div>
+              </InfoWindow>}
+            </Marker>
+          </div>
         ))}
-
       </GoogleMap>
     </LoadScript>
-  );
-};
+  )
+}
 
 export default MyComponent;
